@@ -41,7 +41,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
         String servletPath = request.getServletPath();
         String authrizationHeader = request.getHeader(AUTHORIZATION);
 
-        // 회원가입, 로그인, 리프레시 요청이라면 토큰 검사하지 않음
+        // 인증이 필요한 엔드포인트가 아니라면 토큰 검사하지 않음
         if (!servletPath.equals("/api/my") && !servletPath.equals("/api/admin")) {
             filterChain.doFilter(request, response);
         } else if (authrizationHeader == null || !authrizationHeader.startsWith(TOKEN_HEADER_PREFIX)) {
