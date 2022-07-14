@@ -47,13 +47,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+
+        // 일반 로그인 인증 필터
         CustomAuthenticationFilter customAuthenticationFilter =
                 new CustomAuthenticationFilter(authenticationManagerBean());
-
         customAuthenticationFilter.setFilterProcessesUrl("/api/login");
         customAuthenticationFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
         customAuthenticationFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
 
+        // Kakao 로그인 인증 필터
         CustomKakaoAuthenticationFilter customKakaoAuthenticationFilter =
                 new CustomKakaoAuthenticationFilter(kakaoOAuth2, accountRepository, roleRepository, passwordEncoder, authenticationManagerBean());
         customKakaoAuthenticationFilter.setFilterProcessesUrl("/api/oauth/kakao");

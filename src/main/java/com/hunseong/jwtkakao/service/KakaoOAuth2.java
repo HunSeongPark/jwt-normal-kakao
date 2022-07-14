@@ -26,9 +26,7 @@ public class KakaoOAuth2 {
         // 1. 인가코드 -> 액세스 토큰
         String accessToken = getAccessToken(authorizedCode);
         // 2. 액세스 토큰 -> 카카오 사용자 정보
-        KakaoUserInfo userInfo = getUserInfoByToken(accessToken);
-
-        return userInfo;
+        return getUserInfoByToken(accessToken);
     }
 
     private String getAccessToken(String authorizedCode) throws JsonProcessingException {
@@ -86,9 +84,9 @@ public class KakaoOAuth2 {
         ObjectMapper objectMapper = new ObjectMapper();
         ProfileResult profileResult = objectMapper.readValue(response.getBody(), ProfileResult.class);
 
-        Long id = profileResult.getId();
+        Long oid = profileResult.getId();
         String email = (String) profileResult.getKakao_account().get("email");
 
-        return new KakaoUserInfo(id, email);
+        return new KakaoUserInfo(oid, email);
     }
 }

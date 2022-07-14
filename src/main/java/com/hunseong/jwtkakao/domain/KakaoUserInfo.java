@@ -11,6 +11,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class KakaoUserInfo {
 
-    private final Long id;
+    private final Long oid;
     private final String email;
 }
