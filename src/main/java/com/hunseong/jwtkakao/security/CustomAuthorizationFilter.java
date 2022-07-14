@@ -42,7 +42,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
         String authrizationHeader = request.getHeader(AUTHORIZATION);
 
         // 회원가입, 로그인, 리프레시 요청이라면 토큰 검사하지 않음
-        if (servletPath.equals("/api/login") || servletPath.equals("/api/refresh") || servletPath.equals("/api/signup")) {
+        if (!servletPath.equals("/api/my") && !servletPath.equals("/api/admin")) {
             filterChain.doFilter(request, response);
         } else if (authrizationHeader == null || !authrizationHeader.startsWith(TOKEN_HEADER_PREFIX)) {
             // 토큰값이 없거나 정상적이지 않다면 400 오류

@@ -5,7 +5,9 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hunseong.jwtkakao.domain.Account;
+import com.hunseong.jwtkakao.domain.KakaoUserInfo;
 import com.hunseong.jwtkakao.domain.Role;
 import com.hunseong.jwtkakao.domain.dto.AccountRequestDto;
 import com.hunseong.jwtkakao.domain.dto.RoleToUserRequestDto;
@@ -13,19 +15,20 @@ import com.hunseong.jwtkakao.repository.AccountRepository;
 import com.hunseong.jwtkakao.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.hunseong.jwtkakao.security.JwtConstants.*;
@@ -39,22 +42,13 @@ import static com.hunseong.jwtkakao.security.JwtConstants.*;
 @Transactional
 @RequiredArgsConstructor
 @Service
-public class AccountServiceImpl implements AccountService, UserDetailsService {
+public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Account account = accountRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("UserDetailsService - loadUserByUsername : 사용자를 찾을 수 없습니다."));
-
-        List<SimpleGrantedAuthority> authorities = account.getRoles()
-                .stream().map(role -> new SimpleGrantedAuthority(role.getName())).toList();
-
-        return new User(account.getUsername(), account.getPassword(), authorities);
-    }
+    private final KakaoOAuth2 kakaoOAuth2;
+    private final AuthenticationManager authenticationManager;
 
     @Override
     public Long saveAccount(AccountRequestDto dto) {
@@ -136,5 +130,32 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
 
         accessTokenResponseMap.put(AT_HEADER, accessToken);
         return accessTokenResponseMap;
+    }
+
+    @Override
+    public void kakaoLogin(String authorizedCode) throws JsonProcessingException {
+
+        KakaoUserInfo userInfo = kakaoOAuth2.getUserInfo(authorizedCode);
+        Long oAuthId = userInfo.getId();
+        String email = userInfo.getEmail();
+
+        String password = oAuthId.toString();
+
+        Account kakaoAccount = accountRepository.findByOid(oAuthId).orElse(null);
+
+        if (kakaoAccount == null) {
+            Role role = roleRepository.findByName("ROLE_USER").get();
+            Account account = Account.builder()
+                    .oid(oAuthId)
+                    .email(email)
+                    .username(email)
+                    .password(passwordEncoder.encode(password))
+                    .roles(Collections.singletonList(role))
+                    .build();
+            accountRepository.save(account);
+        }
+
+        Authentication authToken = new UsernamePasswordAuthenticationToken(email, password);
+        authenticationManager.authenticate(authToken);
     }
 }

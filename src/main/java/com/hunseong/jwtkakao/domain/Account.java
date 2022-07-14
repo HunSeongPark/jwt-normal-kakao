@@ -27,6 +27,9 @@ public class Account {
     private String username;
     private String password;
 
+    private Long oid;
+    private String email;
+
     @ManyToMany
     private List<Role> roles = new ArrayList<>();
 

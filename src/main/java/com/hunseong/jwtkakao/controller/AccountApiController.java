@@ -1,5 +1,6 @@
 package com.hunseong.jwtkakao.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hunseong.jwtkakao.domain.dto.AccountRequestDto;
 import com.hunseong.jwtkakao.domain.dto.RoleToUserRequestDto;
 import com.hunseong.jwtkakao.service.AccountService;

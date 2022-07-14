@@ -1,6 +1,7 @@
 package com.hunseong.jwtkakao.service;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hunseong.jwtkakao.domain.dto.AccountRequestDto;
 import com.hunseong.jwtkakao.domain.dto.RoleToUserRequestDto;
 
@@ -18,4 +19,6 @@ public interface AccountService {
     void updateRefreshToken(String username, String refreshToken);
 
     Map<String, String> refresh(String refreshToken);
+
+    void kakaoLogin(String authorizedCode) throws JsonProcessingException;
 }
