@@ -1,4 +1,7 @@
 spring:
+  profiles:
+    include: oauth
+
   datasource:
     url: jdbc:mysql://localhost:3306/kakao
     username: hunseong
@@ -6,7 +9,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: true
 
     properties:
